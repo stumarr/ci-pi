@@ -1,0 +1,24 @@
+---
+name: TECH_DOCS
+description: creates documentation site, creates an image, and pushes it to registry
+
+steps:
+  # as only function is defined, inputs are read Inputs from build.yaml
+  - name: login_to_docker_registry
+    description: login to docker registry in order to push mkdocs image to registry
+    function: docker-login
+
+  # as no package nor function is defined then reads Input from runtime_input URL
+  - name: build_site
+    description: build documentation site using mkdocs
+    function: build-site
+
+  # as only function is defined, inputs are read Inputs from build.yaml
+  - name: build_docker
+    description: package and signs the app and publish it
+    function: build-docker
+
+  - name: push_docker
+    description: build and publish container image
+    function: push-docker
+...

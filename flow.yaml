@@ -1,0 +1,43 @@
+name: TECH_DOCS
+description: creates documentation site, creates an image, and pushes it to registry
+labels: {}
+git:
+  git_uri: https://something.com
+  git_branch: main
+  git_login: user
+  git_password: password
+steps:
+- name: login_to_docker_registry
+  description: login to docker registry in order to push mkdocs image to registry
+  function: docker-login
+  input:
+    secret:
+    - name: IMAGE_REG_PWD
+      description: remote registry username
+      value: anything
+    - name: IMAGE_REG_USER
+      description: remote registry username
+      value: something
+    var:
+    - name: IMAGE_REG
+      description: remote docker registry
+      required: false
+      type: ""
+      value: mongo:5
+  privileged: false
+- name: build_site
+  description: build documentation site using mkdocs
+  function: build-site
+  input: {}
+  privileged: false
+- name: build_docker
+  description: package and signs the app and publish it
+  function: build-docker
+  input: {}
+  privileged: false
+- name: push_docker
+  description: build and publish container image
+  function: push-docker
+  input: {}
+  privileged: false
+use_runtimes: true

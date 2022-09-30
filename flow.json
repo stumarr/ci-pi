@@ -1,0 +1,114 @@
+{
+   "key": "ART_FLOW_TECH_DOCS",
+   "name": "TECH_DOCS",
+   "description": "defines the execution flow for TECH_DOCS",
+   "status": 0,
+   "type": "ART_FLOW",
+   "tag": null,
+   "meta": {
+      "Description": "creates documentation site, creates an image, and pushes it to registry",
+      "Name": "TECH_DOCS",
+      "git": {
+         "git_branch": "master",
+         "git_login": "gitea",
+         "git_password": "gitea08252022",
+         "git_uri": "http://3.21.34.225:3000/gitea/ci-pipe.git"
+      },
+      "labels": {},
+      "steps": [
+         {
+            "description": "login to docker registry in order to push mkdocs image to registry",
+            "function": "docker-login",
+            "input": {
+               "secret": [
+                  {
+                     "description": "remote registry username",
+                     "name": "IMAGE_REG_PWD",
+                     "value": "OTE3NjNhMmFlZT361892"
+                  },
+                  {
+                     "description": "remote registry username",
+                     "name": "IMAGE_REG_USER",
+                     "value": "admin"
+                  }
+               ],
+               "var": [
+                  {
+                     "description": "remote docker registry",
+                     "name": "IMAGE_REG",
+                     "required": false,
+                     "type": "",
+                     "value": "registry.cmsee.live"
+                  }
+               ]
+            },
+            "name": "login_to_docker_registry",
+            "privileged": false
+         },
+         {
+            "description": "build documentation site using mkdocs",
+            "function": "build-site",
+            "input": {},
+            "name": "build_site",
+            "privileged": false
+         },
+         {
+            "description": "package and signs the app and publish it",
+            "function": "build-docker",
+            "input": {
+               "var": [
+                  {
+                     "description": "image name",
+                     "name": "IMAGE_NAME",
+                     "required": false,
+                     "type": "string",
+                     "value": "ci-pipe"
+                  },
+                  {
+                     "description": "image tag",
+                     "name": "IMAGE_TAG",
+                     "required": false,
+                     "type": "string",
+                     "value": "latest"
+                  }
+               ]
+            },
+            "name": "build_docker",
+            "privileged": false
+         },
+         {
+            "description": "build and publish container image",
+            "function": "push-docker",
+            "input": {
+               "var": [
+                  {
+                     "description": "image name",
+                     "name": "IMAGE_NAME",
+                     "required": false,
+                     "type": "string",
+                     "value": "ci-pipe"
+                  },
+                  {
+                     "description": "image tag",
+                     "name": "IMAGE_TAG",
+                     "required": false,
+                     "type": "string",
+                     "value": "latest"
+                  }
+               ]
+            },
+            "name": "push_docker",
+            "privileged": false
+         }
+      ],
+      "use_runtimes": true
+   },
+   "txt": "",
+   "attribute": null,
+   "partition": "",
+   "version": 0,
+   "created": "",
+   "updated": "",
+   "encKeyIx": 0,
+   "changedBy": ""
+}

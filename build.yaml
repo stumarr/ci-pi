@@ -1,0 +1,94 @@
+---
+
+input:
+  var:
+    - name: IMAGE_NAME
+      description: image name
+      type: string
+    - name: IMAGE_TAG
+      description: image tag
+      type: string
+    - name: IMAGE_REG
+      description: remote docker registry
+
+  secret:
+    - name: IMAGE_REG_USER
+      description: remote registry username
+
+    - name: IMAGE_REG_PWD
+      description: remote registry username
+
+    - name: K8S_URI
+      description: uri for k8s cluster
+
+    - name: K8S_TOKEN
+      description: token for authenticating to k8s cluster
+
+functions:
+- name: ci-run
+  run:
+    - $(docker-login)
+    - art runc build-site
+    - $(build-docker)
+    - $(push-docker)
+
+- name: docker-login
+  #temp code for testing runtime
+  runtime: ubi-min
+  run:
+    - echo "logging into remote registry"
+    - docker login --username ${IMAGE_REG_USER} --password ${IMAGE_REG_PWD} ${IMAGE_REG}
+  input:
+    var:
+      - IMAGE_REG
+    secret:
+      - IMAGE_REG_PWD
+      - IMAGE_REG_USER
+
+- name: build-site
+  runtime: registry.cmsee.live/artisan/mkdocs
+  description: building mkdocs site and copying to docker directory
+  run:
+    - echo "building mkdocs site"
+    - mkdocs new .
+    - mkdocs build
+    - sh -c 'cp -R site content/site'
+
+- name: build-docker
+  #temp code for testing runtime
+  runtime: ubi-min
+  description: docker image build
+  run:
+    - echo "building docker image ${IMAGE_NAME}:${IMAGE_TAG}" 
+    - sh -c '(cd ~/projects/runner/ci-pi/docker && docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .)'
+  input:
+    var:
+    - IMAGE_NAME
+    - IMAGE_TAG
+
+- name: push-docker
+  #temp code for testing runtime
+  runtime: ubi-min
+  description: push docker image to remote registry
+  run:
+    - echo "pushing docker image ${IMAGE_NAME}:${IMAGE_TAG} with ${IMAGE_REG_USER} and ${IMAGE_REG_PWD}"
+    - docker push ${IMAGE_NAME}:${IMAGE_TAG}
+  input:
+    var:
+    - IMAGE_NAME
+    - IMAGE_TAG
+
+- name: total-destruction
+  description: building mkdocs site and copying to docker directory
+  run:
+    - echo "logging out of remote registry"
+    - docker logout ${IMAGE_REG}
+    - echo "deleting local images"
+    - docker rmi registry.cmsee.live/ci-pipe registry.cmsee.live/artisan/mkdocs
+    - echo "cleaning up files and folders"
+    - rm -R content/site && rm mkdocs.yml
+    - echo "total destruction complete. thank you, come again!"
+  input:
+    var:
+    - IMAGE_REG
+...
